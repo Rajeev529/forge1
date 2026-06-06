@@ -48,13 +48,21 @@ def seo_load(export_dir: str) -> dict:
 
 
 def _guess_site(rows):
-    if not rows: return "unknown"
-    addr = rows[0].get("Address", "")
-    try:
-        from urllib.parse import urlparse
-        return urlparse(addr).netloc or "unknown"
-    except Exception:
+    """Guess site name from export data"""
+    if rows is None or rows.empty:
         return "unknown"
+    
+    # Try to get site from first row if there's a site column
+    if 'site' in rows.columns:
+        return str(rows['site'].iloc[0])
+    
+    # Or try to extract from URL
+    if 'url' in rows.columns and len(rows) > 0:
+        first_url = str(rows['url'].iloc[0])
+        # Extract domain logic here...
+        return first_url.split('/')[2] if '://' in first_url else "unknown"
+    
+    return "unknown"
 
 
 def seo_detect() -> dict:

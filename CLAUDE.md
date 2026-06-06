@@ -16,7 +16,7 @@ The repository contains the **SEO Command Center**, a Claude Code plugin designe
 - **Run End-to-End (Headless)**: `python seo-command-center/run.py sample-export/`
 - **Use Plugin in Claude Code**: `/seo-audit sample-export/`
 - **Install Dependencies**: `pip install mcp`
-- **Live Dashboard**: Start `run.py` and visit `http://localhost:7700`
+- **Live Dashboard**: Start `python seo-command-center/mcp/server.py` and visit `http://localhost:7700`
 
 ## Architecture & Constraints
 - **Deterministic Audit**: Use `seo-command-center/seo/detector.py` for all rule-based detection. Do not use LLMs for basic counting/filtering of crawl rows.

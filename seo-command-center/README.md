@@ -1,66 +1,69 @@
-# SEO Command Center — Forge Sprint 01 starter
+# SEO Command Center — Forge Sprint 01
 
-A Claude Code **plugin** that ingests a **Screaming Frog SEO export**, audits it against
-the rulebook, prioritizes the issues, writes fixes, and renders a **live dashboard** plus
-an exportable client report. The plumbing works out of the box — you implement the SEO
-logic and push accuracy on the hidden export.
+A Claude Code plugin designed to ingest Screaming Frog SEO exports, audit them against a deterministic rulebook, and provide both a live interactive dashboard and a client-ready report.
 
-## Quick start (headless, proves it runs)
+## 🚀 Quick Start & Installation
+
+### 1. Prerequisites
+Ensure you have Python 3.10+ installed.
+
+### 2. Install Dependencies
+The dashboard and MCP tools require the `mcp` library:
 ```bash
-pip install mcp          # exposes MCP tools to Claude Code (dashboard works without it too)
-python run.py sample-export/
-# open the live cockpit:
-#   http://localhost:7700
-# outputs land in outputs/report.json and outputs/report.html
+pip install mcp
 ```
 
-## Inside Claude Code
+### 3. Generate the Audit Output
+You can generate the SEO audit using any of the following three methods:
+
+#### Method A: The Headless Runner (Fastest)
+Use this for quick verification or grading. It processes the export and generates files in the `outputs/` folder.
+```bash
+python seo-command-center/run.py sample-export/
+```
+
+#### Method B: The Claude Code Plugin (Interactive)
+If you are using Claude Code, you can run the audit directly as a skill:
 ```
 /seo-audit sample-export/
 ```
 
-## What's here
+#### Method C: Live Dashboard Mode (Visual)
+To run the audit and immediately launch the interactive dashboard cockpit:
+```bash
+python seo-command-center/run_with_dashboard.py sample-export/
+```
+Then open your browser to: [http://localhost:7700](http://localhost:7700)
+
+---
+
+## 🛠 How it Works
+
+### Deterministic Detection
+The system follows a strict rulebook (`rulebook.md`) to identify issues. We use **plain Python** for counting, filtering, and detection to ensure 100% accuracy. LLMs are reserved only for high-value judgment tasks (e.g., rewriting titles or meta descriptions).
+
+### Key Rules Implemented:
+- **Titles**: Missing, Duplicate, Too Long (>60 chars), Too Short (<30 chars).
+- **Meta Descriptions**: Missing, Duplicate, Too Long (>155 chars).
+- **Headers**: Missing H1, Duplicate H1.
+- **Technical**: Broken Links (4xx), Server Errors (5xx), Redirects (3xx), Redirect Chains.
+- **Content**: Thin Content (<200 words), Orphan Pages, Non-indexable linked pages.
+- **Performance**: Slow Pages (>1.0s response time).
+
+## 📂 Project Structure
 ```
 seo-command-center/
-├── .claude-plugin/plugin.json   plugin manifest (skill + command + agents + MCP)
-├── .claude/                     audit hooks (settings.json + hooks/audit.sh) → records your process
-├── skills/seo-audit/SKILL.md    orchestrator
-├── agents/                      ingest, auditor, fixer, reporter (sub-agents)
-├── commands/seo-audit.md        the /seo-audit command
-├── mcp/server.py                local MCP server + live dashboard host (localhost:7700)
-├── seo/detector.py              deterministic issue detection  ← EXTEND THIS to the full rulebook
-├── dashboard/                   index.html + app.js (the cockpit)
-├── scripts/export-transcript.sh saves your session transcript to agent-log.md (commit it)
-├── run.py                       headless runner (the grader's entry point)
-└── outputs/                     report.json + report.html (generated)
+├── .claude-plugin/plugin.json   Plugin manifest
+├── mcp/server.py                Local MCP server & Dashboard host (Port 7700)
+├── seo/detector.py              Deterministic SEO detection engine
+├── skills/seo-audit/SKILL.md    Plugin orchestrator
+├── run.py                       Headless entry point
+├── run_with_dashboard.py         Dashboard launch wrapper
+├── populate_dashboard.py        Data synchronization script
+└── outputs/                     Generated report.json and report.html
 ```
 
-## Your job in the Sprint
-1. **Complete `seo/detector.py`** to cover the full `rulebook.md` (the starter only does a
-   few issue types). Accuracy on the hidden export is the biggest part of your score.
-2. **Implement the fixer** (titles/meta rewrites within limits + a redirect map) for the
-   champion tier — see `agents/fixer.md`.
-3. **Improve the dashboard / report** to be genuinely client-ready.
-4. **Commit incrementally** (≥10 commits) and let the audit hooks record your process.
-
-## Process + memory files you must maintain (graded — see challenge brief section 08)
-These are how the judges assess *how you worked with the AI*, not just the result:
-- `.claude/audit.jsonl` — auto-written by the hooks (every tool call). Commit it. Keep
-  `.claude/settings.json` in place so the hooks keep recording.
-- `agent-log.md` — run `bash scripts/export-transcript.sh` at the end to export your session
-  transcript. Commit it.
-- `CLAUDE.md` — your project memory / instructions for the agent. **Edit this as you build** —
-  good context engineering is the clearest signal of good practice.
-- `PROMPTS.md` — log your key prompts (the ones that moved the build).
-- `DECISIONS.md` — log your real decisions and what you learned / fixed.
-
-The three records (audit log, transcript, git history) must agree — that is how a real process
-is told apart from a fabricated one. Do not edit or fake the logs.
-
-## The model
-Run on the free local stack (Claude Code + Ollama). Set `OLLAMA_CONTEXT_LENGTH=65536`,
-use a tool-trained model (`qwen3.5:9b` or `gemma4:31b-cloud`), not `qwen2.5-coder`.
-
-## Note
-The dashboard renders the operator's own crawl data on localhost; it is a local cockpit,
-not a hardened public server. The shareable artifact is the exported `report.html`.
+## 📋 Deliverables
+All audits produce two primary artifacts in the `outputs/` directory:
+- `report.json`: A machine-readable JSON file adhering to `report.schema.json`.
+- `report.html`: A client-ready HTML report.
