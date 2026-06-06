@@ -14,6 +14,14 @@ def load_rows(export_dir: str) -> pd.DataFrame:
     df.columns = [c.strip() for c in df.columns]
     return df
 
+def guess_site(df: pd.DataFrame) -> str:
+    """Infers site name from the first URL."""
+    if df.empty or "Address" not in df.columns:
+        return "Unknown Site"
+    first_url = str(df["Address"].iloc[0])
+    parsed = urlparse(first_url)
+    return parsed.netloc if parsed.netloc else first_url
+
 def detect(df: pd.DataFrame) -> list[dict]:
     """
     Analyzes the Screaming Frog data and detects 17 SEO issues.
@@ -21,12 +29,8 @@ def detect(df: pd.DataFrame) -> list[dict]:
     """
     total_urls = len(df)
 
-    # Infer site name from the first URL (kept for consistency if needed, but not returned now)
-    site = "Unknown Site"
-    if not df.empty and "Address" in df.columns:
-        first_url = str(df["Address"].iloc[0])
-        parsed = urlparse(first_url)
-        site = parsed.netloc if parsed.netloc else first_url
+    # --- Helper Dataframes for performance and avoiding warnings ---
+
 
     # --- Helper Dataframes for performance and avoiding warnings ---
     # All checks use these masks based on the original df

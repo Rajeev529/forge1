@@ -24,6 +24,7 @@ MODEL = os.environ.get("RADAR_MODEL", "qwen3.5:9b")
 import sys
 sys.path.insert(0, ROOT)
 from seo import detector  # noqa: E402
+from seo.report import generate_report
 
 RUN = {"site": None, "urls": 0, "issues": [], "summary": None, "status": "idle"}
 _subs: list[queue.Queue] = []
@@ -100,8 +101,14 @@ def seo_recommend(recommendations: list) -> dict:
 
 def seo_report() -> dict:
     os.makedirs(OUT_DIR, exist_ok=True)
+    generate_report(
+        issues=RUN.get("issues", []),
+        site=RUN.get("site", "unknown"),
+        urls_crawled=RUN.get("urls", 0),
+        duration=0.0,
+        output_dir=OUT_DIR
+    )
     p = os.path.join(OUT_DIR, "report.json")
-    json.dump(_report_obj(), open(p, "w", encoding="utf-8"), indent=2)
     RUN["status"] = "done"; _emit("saved", {"path": p}); return {"path": p}
 
 
@@ -149,6 +156,7 @@ class H(BaseHTTPRequestHandler):
         self.send_header("Cache-Control", "no-cache"); self.end_headers()
         self.wfile.write(body.encode() if isinstance(body, str) else body)
     def do_GET(self):
+        print(f"Request received: {self.path}")
         if self.path in ("/", "/index.html"):
             p = os.path.join(DASH_DIR, "index.html")
             self._send(200, open(p, encoding="utf-8").read() if os.path.exists(p) else "no dashboard")
@@ -157,6 +165,15 @@ class H(BaseHTTPRequestHandler):
             self._send(200, open(p, encoding="utf-8").read() if os.path.exists(p) else "", "application/javascript")
         elif self.path == "/state":
             self._send(200, json.dumps({k: v for k, v in RUN.items() if k != "rows"}), "application/json")
+        elif "load" in self.path:
+            import urllib.parse as up
+            query = up.parse_qs(self.path.split('?')[1]) if '?' in self.path else {}
+            dir_path = query.get('dir', ['sample-export'])[0]
+            res = seo_load(dir_path)
+            self._send(200, json.dumps(res), "application/json")
+        elif "detect" in self.path:
+            res = seo_detect()
+            self._send(200, json.dumps(res), "application/json")
         elif self.path == "/events":
             self.send_response(200); self.send_header("Content-Type", "text/event-stream")
             self.send_header("Cache-Control", "no-cache"); self.end_headers()

@@ -9,7 +9,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 print("Starting dashboard and populating with sample data...")
 
 # Explicitly load the local server.py to avoid conflict with the 'mcp' SDK package
-spec = importlib.util.spec_from_file_location("seo_server", os.path.join(ROOT, "mcp", "server.py"))
+spec = importlib.util.spec_from_file_location("seo_server", os.path.join(ROOT, "mcp_local", "server.py"))
 server = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(server)
 
