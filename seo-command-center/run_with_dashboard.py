@@ -10,7 +10,7 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
-from mcp.server import start_dashboard, seo_load, seo_detect, seo_report, seo_export
+from mcp_local.server import start_dashboard, seo_load, seo_detect, seo_report, seo_export
 
 def main():
     export_dir = "sample-export"

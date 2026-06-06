@@ -6,7 +6,7 @@ Orchestrates detection and reporting.
 import sys
 import os
 import time
-from seo.detector import detect
+from seo.detector import detect, load_rows, guess_site
 from seo.report import generate_report
 
 def main():
@@ -21,7 +21,10 @@ def main():
         # 2. Execute Detection Logic
         t0 = time.time()
         print("\nRunning deterministic detectors...")
-        issues, total_urls, site = detect(export_dir)
+        df = load_rows(export_dir)
+        total_urls = len(df)
+        site = guess_site(df)
+        issues = detect(df)
         duration = round(time.time() - t0, 2)
         print(f"Detection complete. Found {len(issues)} issue types in {duration}s.")
 
