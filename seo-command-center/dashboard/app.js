@@ -3,6 +3,7 @@ const $ = (id) => document.getElementById(id);
 let totals = { High: 0, Medium: 0, Low: 0, total: 0 };
 
 function log(msg) {
+  console.log("Log:", msg);
   const l = $("log"); if (l.querySelector(".empty")) l.innerHTML = "";
   const d = document.createElement("div"); d.textContent = "› " + msg; l.appendChild(d); l.scrollTop = l.scrollHeight;
 }
@@ -17,6 +18,7 @@ function addIssue(i) {
   $("c-med").textContent = totals.Medium; $("c-low").textContent = totals.Low;
 }
 function handle({ event, data }) {
+  console.log("Event received:", event, data);
   if (event === "snapshot") {
     if (data.site) { $("meta").textContent = "· " + data.site; $("urls").textContent = (data.urls||0) + " URLs"; }
     (data.issues || []).forEach(addIssue);
@@ -31,4 +33,6 @@ function handle({ event, data }) {
   else if (event === "saved") { log("report.json saved"); }
 }
 const es = new EventSource("/events");
-es.onmessage = (m) => { try { handle(JSON.parse(m.data)); } catch (e) {} };
+es.onopen = () => log("Connected to event stream...");
+es.onerror = (e) => console.error("SSE Error:", e);
+es.onmessage = (m) => { try { handle(JSON.parse(m.data)); } catch (e) { console.error("Parse error:", e, m.data); } };

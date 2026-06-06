@@ -22,7 +22,7 @@ def guess_site(df: pd.DataFrame) -> str:
     parsed = urlparse(first_url)
     return parsed.netloc if parsed.netloc else first_url
 
-def detect(df: pd.DataFrame) -> list[dict]:
+def detect(df: pd.DataFrame, callback=None) -> list[dict]:
     """
     Analyzes the Screaming Frog data and detects 17 SEO issues.
     Returns a list of issues.
@@ -45,13 +45,16 @@ def detect(df: pd.DataFrame) -> list[dict]:
     def add_issue(type_name, severity, urls, explanation):
         sorted_urls = sorted(list(set(urls)))
         if sorted_urls:
-            issues.append({
+            issue = {
                 "type": type_name,
                 "severity": severity,
                 "affected_urls": sorted_urls,
                 "count": len(sorted_urls),
                 "explanation": explanation
-            })
+            }
+            issues.append(issue)
+            if callback:
+                callback(issue)
 
     # 1. missing_title
     missing_title_urls = df_idx200[df_idx200["Title 1"].fillna("") == ""]["Address"].tolist()

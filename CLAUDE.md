@@ -14,19 +14,24 @@ The repository contains the **SEO Command Center**, a Claude Code plugin designe
 
 ## Common Commands
 - **Run End-to-End (Headless)**: `python seo-command-center/run.py sample-export/`
+- **Run with Live Dashboard**: `python seo-command-center/run_with_dashboard.py sample-export/`
 - **Use Plugin in Claude Code**: `/seo-audit sample-export/`
 - **Install Dependencies**: `pip install mcp`
-- **Live Dashboard**: Start `python seo-command-center/mcp/server.py` and visit `http://localhost:7700`
+- **Live Dashboard Server Only**: Start `python seo-command-center/mcp/server.py` and visit `http://localhost:7700`
 
 ## Architecture & Constraints
 - **Deterministic Audit**: Use `seo-command-center/seo/detector.py` for all rule-based detection. Do not use LLMs for basic counting/filtering of crawl rows.
 - **LLM Usage**: Reserved for high-value judgment tasks: rewriting titles/meta descriptions and choosing redirect targets.
 - **Validation**: All outputs in `outputs/report.json` must strictly adhere to `report.schema.json`.
 - **Pre-filtering**: Always filter for `text/html` and indexable pages before performing title/meta/H1 checks.
+- **Output Deliverables**:
+  - `outputs/report.json` & `outputs/report.html`: Master reports.
+  - `outputs/report_csvs/`: Detailed CSVs for each issue type.
+  - `outputs/fixes/`: Proposed fixes (`titles.csv`, `redirect-map.csv`).
 
 ## Project Memory & Records
 This project is part of a graded challenge. The following files must be maintained:
-- `seo-command-center/CLAUDE.md`: Project-specific memory and instructions.
+- `seo-command-center/CLAUDE.md`: Project-specific memory and instructions (consolidated to root).
 - `seo-command-center/PROMPTS.md`: Log of key prompts used during development.
 - `seo-command-center/DECISIONS.md`: Log of architectural and logic decisions.
 - `.claude/audit.jsonl`: Auto-generated log of tool calls.
@@ -35,3 +40,6 @@ This project is part of a graded challenge. The following files must be maintain
 ## Reference Documents
 - `rulebook.md`: The deterministic SEO rules for detection.
 - `seo-command-center/README.md`: Quickstart and project structure.
+
+## Project Lessons & Quirks
+- (Use this section to record specific findings, e.g., "SF leaves Title 1 blank on redirected URLs — must filter Status Code 200 first")
